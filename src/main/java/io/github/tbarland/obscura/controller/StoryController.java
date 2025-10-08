@@ -1,0 +1,35 @@
+package io.github.tbarland.obscura.controller;
+
+import io.github.tbarland.obscura.dto.StoryRequestDto;
+import io.github.tbarland.obscura.dto.StoryResponseDto;
+import io.github.tbarland.obscura.service.StoryService;
+import java.util.List;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/stories")
+public class StoryController {
+
+  private final StoryService storyService;
+
+  public StoryController(StoryService storyService) {
+    this.storyService = storyService;
+  }
+
+  @GetMapping
+  public ResponseEntity<List<StoryResponseDto>> getAllStories() {
+    return ResponseEntity.ok(storyService.getAllStories());
+  }
+
+  @PostMapping()
+  public ResponseEntity<StoryResponseDto> createStory(
+      @Validated @RequestBody StoryRequestDto request) {
+    return ResponseEntity.ok(storyService.createStory(request));
+  }
+}
