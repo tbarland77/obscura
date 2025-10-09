@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: obscura
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics

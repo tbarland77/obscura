@@ -3,9 +3,9 @@ package io.github.tbarland.obscura.controller;
 import io.github.tbarland.obscura.dto.StoryRequestDto;
 import io.github.tbarland.obscura.dto.StoryResponseDto;
 import io.github.tbarland.obscura.service.StoryService;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,8 +28,7 @@ public class StoryController {
   }
 
   @PostMapping()
-  public ResponseEntity<StoryResponseDto> createStory(
-      @Validated @RequestBody StoryRequestDto request) {
+  public ResponseEntity<StoryResponseDto> createStory(@Valid @RequestBody StoryRequestDto request) {
     return ResponseEntity.ok(storyService.createStory(request));
   }
 }
