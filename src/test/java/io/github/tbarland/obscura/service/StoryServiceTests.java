@@ -1,6 +1,8 @@
 package io.github.tbarland.obscura.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.tbarland.obscura.model.Story;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 public class StoryServiceTests {
@@ -56,5 +59,25 @@ public class StoryServiceTests {
     assertEquals("New Content", response.content());
     assertEquals("New Author", response.author());
     assertEquals(List.of("newtag"), response.tags());
+  }
+
+  @Test
+  public void testDeleteStory() {
+    Long storyId = 1L;
+
+    when(storyRepository.existsById(storyId)).thenReturn(true);
+
+    storyService.deleteStory(storyId);
+
+    verify(storyRepository).deleteById(storyId);
+  }
+
+  @Test
+  public void testDeleteStoryNotFound() {
+    Long storyId = 999L;
+
+    when(storyRepository.existsById(storyId)).thenReturn(false);
+
+    assertThrows(ResponseStatusException.class, () -> storyService.deleteStory(storyId));
   }
 }
