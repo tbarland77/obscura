@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  app:
+    image: eclipse-temurin:21-jdk
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace:cached
+      - gradle-cache:/root/.gradle
+    command: ["./gradlew", "bootRun", "--no-daemon"]
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+    ports:
+      - "8080:8080"
+    restart: "no"
+
+volumes:
+  gradle-cache:
+    driver: local
