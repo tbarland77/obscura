@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +33,12 @@ public class StoryController {
   @PostMapping()
   public ResponseEntity<StoryResponseDto> createStory(@Valid @RequestBody StoryRequestDto request) {
     return ResponseEntity.ok(storyService.createStory(request));
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<StoryResponseDto> updateStory(
+      @PathVariable Long id, @Valid @RequestBody StoryRequestDto request) {
+    return ResponseEntity.ok(storyService.updateStory(id, request));
   }
 
   @DeleteMapping("/{id}")

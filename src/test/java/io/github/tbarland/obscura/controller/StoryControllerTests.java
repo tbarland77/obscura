@@ -84,4 +84,42 @@ public class StoryControllerTests {
 
     assertThrows(ResponseStatusException.class, () -> storyController.deleteStory(storyId));
   }
+
+  @Test
+  public void testUpdateStory() {
+    Long storyId = 1L;
+    StoryRequestDto mockRequest =
+        new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));
+
+    StoryResponseDto mockStory =
+        new StoryResponseDto(
+            storyId,
+            "Updated Title",
+            "Updated Content",
+            "Updated Author",
+            List.of("tag1"),
+            LocalDateTime.now());
+
+    when(storyService.updateStory(storyId, mockRequest)).thenReturn(mockStory);
+
+    var response = storyController.updateStory(storyId, mockRequest);
+
+    assertEquals(200, response.getStatusCode().value());
+    assertEquals(mockStory, response.getBody());
+  }
+
+  @Test
+  public void testUpdateStoryNotFound() {
+    Long storyId = 999L;
+    StoryRequestDto mockRequest =
+        new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));
+
+    when(storyService.updateStory(storyId, mockRequest))
+        .thenThrow(
+            new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Story not found with id: " + storyId));
+
+    assertThrows(
+        ResponseStatusException.class, () -> storyController.updateStory(storyId, mockRequest));
+  }
 }

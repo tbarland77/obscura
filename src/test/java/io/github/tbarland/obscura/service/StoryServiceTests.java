@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.tbarland.obscura.dto.StoryRequestDto;
 import io.github.tbarland.obscura.model.Story;
 import io.github.tbarland.obscura.repository.StoryRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -79,5 +81,42 @@ public class StoryServiceTests {
     when(storyRepository.existsById(storyId)).thenReturn(false);
 
     assertThrows(ResponseStatusException.class, () -> storyService.deleteStory(storyId));
+  }
+
+  @Test
+  public void testUpdateStory() {
+    Long storyId = 1L;
+    StoryRequestDto mockRequest =
+        new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));
+
+    Story existingStory =
+        new Story(
+            storyId,
+            "Old Title",
+            "Old Content",
+            "Old Author",
+            List.of("oldtag"),
+            LocalDateTime.now());
+
+    when(storyRepository.findById(storyId)).thenReturn(Optional.of(existingStory));
+
+    var response = storyService.updateStory(storyId, mockRequest);
+
+    assertEquals("Updated Title", response.title());
+    assertEquals("Updated Content", response.content());
+    assertEquals("Updated Author", response.author());
+    assertEquals(List.of("tag1"), response.tags());
+  }
+
+  @Test
+  public void testUpdateStoryNotFound() {
+    Long storyId = 999L;
+    StoryRequestDto mockRequest =
+        new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));
+
+    when(storyRepository.findById(storyId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ResponseStatusException.class, () -> storyService.updateStory(storyId, mockRequest));
   }
 }
