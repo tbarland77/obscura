@@ -6,13 +6,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.tbarland.obscura.dto.StoryRequestDto;
-import io.github.tbarland.obscura.dto.StoryResponseDto;
 import io.github.tbarland.obscura.model.Story;
 import io.github.tbarland.obscura.repository.StoryRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -91,10 +89,14 @@ public class StoryServiceTests {
     StoryRequestDto mockRequest =
         new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));
 
-
-        Story existingStory =
+    Story existingStory =
         new Story(
-            storyId, "Old Title", "Old Content", "Old Author", List.of("oldtag"), LocalDateTime.now());
+            storyId,
+            "Old Title",
+            "Old Content",
+            "Old Author",
+            List.of("oldtag"),
+            LocalDateTime.now());
 
     when(storyRepository.findById(storyId)).thenReturn(Optional.of(existingStory));
 
@@ -114,6 +116,7 @@ public class StoryServiceTests {
 
     when(storyRepository.findById(storyId)).thenReturn(Optional.empty());
 
-    assertThrows(ResponseStatusException.class, () -> storyService.updateStory(storyId, mockRequest));
+    assertThrows(
+        ResponseStatusException.class, () -> storyService.updateStory(storyId, mockRequest));
   }
 }

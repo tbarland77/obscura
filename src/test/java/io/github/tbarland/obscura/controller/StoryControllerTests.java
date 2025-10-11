@@ -93,7 +93,12 @@ public class StoryControllerTests {
 
     StoryResponseDto mockStory =
         new StoryResponseDto(
-            storyId, "Updated Title", "Updated Content", "Updated Author", List.of("tag1"), LocalDateTime.now());
+            storyId,
+            "Updated Title",
+            "Updated Content",
+            "Updated Author",
+            List.of("tag1"),
+            LocalDateTime.now());
 
     when(storyService.updateStory(storyId, mockRequest)).thenReturn(mockStory);
 
@@ -114,6 +119,7 @@ public class StoryControllerTests {
             new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Story not found with id: " + storyId));
 
-    assertThrows(ResponseStatusException.class, () -> storyController.updateStory(storyId, mockRequest));
+    assertThrows(
+        ResponseStatusException.class, () -> storyController.updateStory(storyId, mockRequest));
   }
 }

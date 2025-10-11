@@ -68,7 +68,9 @@ public class StoryService {
         storyRepository
             .findById(id)
             .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Story not found with id: " + id));
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Story not found with id: " + id));
 
     story.setTitle(dto.title());
     story.setContent(dto.content());
