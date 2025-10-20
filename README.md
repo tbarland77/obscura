@@ -14,10 +14,6 @@ A small demo Spring Boot application that manages "stories" via a simple REST AP
 - Build tool: Gradle (wrapper included)
 - In-memory DB: H2 (runtime)
 
-## Badges
-
-The badges above use Shields.io and GitHub Actions links where possible. If you don't have the referenced GitHub Actions workflow in this repository yet, the build badge will show an unknown state until a workflow is added.
-
 ## Prerequisites
 
 - JDK 21 installed (or let Gradle use a configured toolchain that will download an appropriate JDK)
