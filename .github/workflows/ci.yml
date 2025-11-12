@@ -37,10 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: format-check  # Only run if formatting passes
 
-    permissions:
-      contents: write  # For dependency submission
-      pull-requests: write  # For PR comments
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,8 +56,8 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build with Gradle (parallel enabled)
-        run: ./gradlew build check --parallel --build-cache --configuration-cache
+      - name: Build with Gradle
+        run: ./gradlew build check
 
       - name: Upload test results
         if: always()
@@ -82,13 +78,15 @@ jobs:
       - name: Generate coverage summary
         if: always()
         run: |
+          if [ -f build/reports/jacoco/test/jacocoTestReport.csv ]; then
           COVERAGE=$(awk -F',' '{ instructions += $4 + $5; covered += $5 } END { print int(100*covered/instructions) }' build/reports/jacoco/test/jacocoTestReport.csv)
           echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
           echo "### Test Coverage: ${COVERAGE}% 📊" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Minimum required: 85%" >> $GITHUB_STEP_SUMMARY
+           else
+          echo "⚠️ Coverage report not found" >> $GITHUB_STEP_SUMMARY
+          fi
 
-  # Dependency submission (runs in parallel with build)
+  # Dependency submission (runs after formatting check, in parallel with build)
   dependency-submission:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -114,7 +112,5 @@ jobs:
       - name: Submit dependency graph
         uses: mikepenz/gradle-dependency-submission@v1
         with:
-          gradle-build-module: |-
-            :
-          gradle-build-configuration: |-
-            runtimeClasspath
+          gradle-build-module: ':'
+          gradle-build-configuration: 'runtimeClasspath'
