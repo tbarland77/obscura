@@ -6,41 +6,115 @@ on:
   pull_request:
     branches: [ "main" ]
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# Cancel in-progress runs when a new workflow with the same group name is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
+  # Fast fail-fast job for formatting check
+  format-check:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'gradle'
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       - name: Verify formatting
-        run: ./gradlew spotlessCheck
+        run: ./gradlew spotlessCheck --no-daemon
 
-      - name: Build with Gradle
-        run: ./gradlew build check
+  # Main build and test job
+  build:
+    runs-on: ubuntu-latest
+    needs: format-check  # Only run if formatting passes
+
+    permissions:
+      contents: write  # For dependency submission
+      pull-requests: write  # For PR comments
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'  # Built-in Gradle caching (faster than actions/cache)
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with Gradle (parallel enabled)
+        run: ./gradlew build check --parallel --build-cache --configuration-cache
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/reports/tests/test/
+          retention-days: 30
 
       - name: Upload coverage report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
-          path: build/reports/jacoco/test/html
+          path: build/reports/jacoco/test/html/
+          retention-days: 30
+
+      - name: Generate coverage summary
+        if: always()
+        run: |
+          COVERAGE=$(awk -F',' '{ instructions += $4 + $5; covered += $5 } END { print int(100*covered/instructions) }' build/reports/jacoco/test/jacocoTestReport.csv)
+          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+          echo "### Test Coverage: ${COVERAGE}% 📊" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Minimum required: 85%" >> $GITHUB_STEP_SUMMARY
+
+  # Dependency submission (runs in parallel with build)
+  dependency-submission:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: format-check  # Only needs formatting to pass
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Submit dependency graph
+        uses: mikepenz/gradle-dependency-submission@v1
+        with:
+          gradle-build-module: |-
+            :
+          gradle-build-configuration: |-
+            runtimeClasspath
