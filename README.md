@@ -17,6 +17,7 @@ A lightweight Spring Boot REST API for managing stories. This project demonstrat
 - **Code quality enforcement** with JaCoCo (85% coverage) and Spotless
 - **Docker support** with multi-stage builds
 - **Comprehensive test suite** with JUnit 5 and Mockito
+- **Optimized CI/CD pipeline** with parallel jobs, build caching, and automated security alerts
 
 ## Prerequisites
 
@@ -126,6 +127,16 @@ This runs:
 - Code formatting checks with Spotless
 
 Coverage reports are available in `build/reports/jacoco/test/html/`
+
+### Performance Optimizations
+
+The project includes build performance optimizations in `gradle.properties`:
+
+- **Build cache** - Reuses outputs from previous builds
+- **Parallel execution** - Runs independent tasks concurrently
+- **Configuration cache** - Speeds up Gradle configuration phase
+
+These optimizations significantly reduce build times, especially for incremental builds. The CI/CD pipeline also leverages these features for faster feedback.
 
 ### Code Formatting
 
