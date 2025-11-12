@@ -18,20 +18,7 @@ A lightweight Spring Boot REST API for managing stories. This project demonstrat
 - **Docker support** with multi-stage builds
 - **Comprehensive test suite** with JUnit 5 and Mockito
 
-## Technology Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Language | Java 21 |
-| Framework | Spring Boot 3.5.6 |
-| Build Tool | Gradle 8.14.3 |
-| Database | H2 (in-memory) |
-| ORM | Spring Data JPA / Hibernate |
-| Testing | JUnit 5, Mockito |
-| Code Quality | JaCoCo, Spotless (Google Java Format) |
-| Containerization | Docker |
-
-## Quick Start
+## Prerequisites
 
 ### Prerequisites
 
@@ -261,4 +248,4 @@ Contributions are welcome! Please ensure:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details. You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.
