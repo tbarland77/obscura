@@ -20,14 +20,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
-public class StoryControllerTests {
+class StoryControllerTests {
 
   @InjectMocks private StoryController storyController;
 
   @Mock private StoryService storyService;
 
   @Test
-  public void testGetAllStories() {
+  void testGetAllStories() {
     List<StoryResponseDto> mockStories =
         List.of(
             new StoryResponseDto(
@@ -44,7 +44,7 @@ public class StoryControllerTests {
   }
 
   @Test
-  public void testCreateStory() {
+  void testCreateStory() {
 
     StoryRequestDto mockRequest =
         new StoryRequestDto("New Title", "New Content", "New Author", List.of("newtag"));
@@ -62,7 +62,7 @@ public class StoryControllerTests {
   }
 
   @Test
-  public void testDeleteStory() {
+  void testDeleteStory() {
     Long storyId = 1L;
 
     doNothing().when(storyService).deleteStory(storyId);
@@ -73,7 +73,7 @@ public class StoryControllerTests {
   }
 
   @Test
-  public void testDeleteStoryNotFound() {
+  void testDeleteStoryNotFound() {
     Long storyId = 999L;
 
     doThrow(
@@ -86,7 +86,7 @@ public class StoryControllerTests {
   }
 
   @Test
-  public void testUpdateStory() {
+  void testUpdateStory() {
     Long storyId = 1L;
     StoryRequestDto mockRequest =
         new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));
@@ -109,7 +109,7 @@ public class StoryControllerTests {
   }
 
   @Test
-  public void testUpdateStoryNotFound() {
+  void testUpdateStoryNotFound() {
     Long storyId = 999L;
     StoryRequestDto mockRequest =
         new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));

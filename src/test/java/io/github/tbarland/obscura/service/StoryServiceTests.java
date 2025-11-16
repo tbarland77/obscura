@@ -18,14 +18,14 @@ import org.mockito.Mock;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
-public class StoryServiceTests {
+class StoryServiceTests {
 
   @InjectMocks private StoryService storyService;
 
   @Mock private StoryRepository storyRepository;
 
   @Test
-  public void testGetAllStories() {
+  void testGetAllStories() {
 
     List<Story> mockStories =
         List.of(
@@ -43,7 +43,7 @@ public class StoryServiceTests {
   }
 
   @Test
-  public void testCreateStory() {
+  void testCreateStory() {
 
     Story mockStory =
         new Story(
@@ -64,7 +64,7 @@ public class StoryServiceTests {
   }
 
   @Test
-  public void testDeleteStory() {
+  void testDeleteStory() {
     Long storyId = 1L;
 
     when(storyRepository.existsById(storyId)).thenReturn(true);
@@ -75,7 +75,7 @@ public class StoryServiceTests {
   }
 
   @Test
-  public void testDeleteStoryNotFound() {
+  void testDeleteStoryNotFound() {
     Long storyId = 999L;
 
     when(storyRepository.existsById(storyId)).thenReturn(false);
@@ -84,7 +84,7 @@ public class StoryServiceTests {
   }
 
   @Test
-  public void testUpdateStory() {
+  void testUpdateStory() {
     Long storyId = 1L;
     StoryRequestDto mockRequest =
         new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));
@@ -109,7 +109,7 @@ public class StoryServiceTests {
   }
 
   @Test
-  public void testUpdateStoryNotFound() {
+  void testUpdateStoryNotFound() {
     Long storyId = 999L;
     StoryRequestDto mockRequest =
         new StoryRequestDto("Updated Title", "Updated Content", "Updated Author", List.of("tag1"));

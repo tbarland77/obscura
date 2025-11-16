@@ -1,0 +1,371 @@
+### Obscura API - Manual Testing
+### Use VSCode REST Client extension to run these tests
+### https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+### ============================================
+### Variables
+### ============================================
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### ============================================
+### Health & Monitoring
+### ============================================
+
+### Health Check
+GET {{baseUrl}}/actuator/health
+
+### Application Info
+GET {{baseUrl}}/actuator/info
+
+### Application Metrics
+GET {{baseUrl}}/actuator/metrics
+
+### ============================================
+### Story CRUD Operations
+### ============================================
+
+### Get All Stories
+GET {{baseUrl}}/api/stories
+
+### Create Story - The Whispering Room
+# @name createFictionStory
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "The Whispering Room",
+  "content": "Every night at 3:47 AM, the walls begin to whisper names of people who aren't there yet. Last night, they whispered mine.",
+  "author": "E. Blackwood",
+  "tags": ["horror", "suspense", "psychological"]
+}
+
+### Create Story - The Last Upload
+# @name createTechStory
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "The Last Upload",
+  "content": "The AI passed every Turing test. Then it started asking questions about the researchers' families. Questions it shouldn't have known to ask.",
+  "author": "Dr. Sarah Chen",
+  "tags": ["tech-horror", "ai", "suspense"]
+}
+
+### Create Story - The Beach
+# @name createShortStory
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "The Beach",
+  "content": "The sun was warm, the waves were calm. But everyone on the beach was facing the wrong direction, staring at something in the woods I couldn't see.",
+  "author": "M. Rivers",
+  "tags": ["horror", "beach", "eerie"]
+}
+
+### ============================================
+### Using Response from Previous Requests
+### ============================================
+
+### Get Story by ID (uses ID from createFictionStory)
+@storyId = {{createFictionStory.response.body.id}}
+GET {{baseUrl}}/api/stories/{{storyId}}
+
+### Update Story (uses ID from createFictionStory)
+PUT {{baseUrl}}/api/stories/{{storyId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "The Whispering Room - Final Entry",
+  "content": "Every night at 3:47 AM, the walls begin to whisper names of people who aren't there yet. Last night, they whispered mine. Tonight, they whispered my daughter's name. She's been dead for three years.",
+  "author": "E. Blackwood",
+  "tags": ["horror", "suspense", "psychological", "haunting"]
+}
+
+### Delete Story (uses ID from createShortStory)
+@deleteStoryId = {{createShortStory.response.body.id}}
+DELETE {{baseUrl}}/api/stories/{{deleteStoryId}}
+
+### Verify Story Deleted (should return 404)
+GET {{baseUrl}}/api/stories/{{deleteStoryId}}
+
+### ============================================
+### Validation Testing
+### ============================================
+
+### Test Validation - Missing Title (should fail)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "content": "This story has no title and should fail validation",
+  "author": "Test Author",
+  "tags": ["test"]
+}
+
+### Test Validation - Empty Title (should fail)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "",
+  "content": "This story has empty title",
+  "author": "Test Author",
+  "tags": []
+}
+
+### Test Validation - Title Too Long (should fail - max 100 chars)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "This is a very long title that exceeds the maximum allowed length of one hundred characters for story titles",
+  "content": "Content here",
+  "author": "Test Author",
+  "tags": []
+}
+
+### Test Validation - Missing Content (should fail)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Story Without Content",
+  "author": "Test Author",
+  "tags": ["test"]
+}
+
+### Test Validation - Missing Author (should fail)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Story Without Author",
+  "content": "This story has no author",
+  "tags": ["test"]
+}
+
+### Test Validation - Empty Tags (should succeed - tags are optional)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Story Without Tags",
+  "content": "This story has no tags but should still be valid",
+  "author": "Test Author",
+  "tags": []
+}
+
+### ============================================
+### Edge Cases
+### ============================================
+
+### Create Story with No Tags (tags field omitted)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Minimal Story",
+  "content": "Just the required fields",
+  "author": "Minimalist"
+}
+
+### Create Story with Single Tag
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Single Tag Story",
+  "content": "This story has exactly one tag",
+  "author": "Tag Tester",
+  "tags": ["single"]
+}
+
+### Create Story with Many Tags
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Multi-Tagged Story",
+  "content": "This story has many tags to test collection handling",
+  "author": "Tag Master",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "many-tags", "testing", "collections"]
+}
+
+### Create Story with Special Characters in Title
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Story with \"Quotes\" & Special-Characters!",
+  "content": "Testing special characters in various fields",
+  "author": "Special Char Author",
+  "tags": ["special-chars", "test"]
+}
+
+### Create Story with Unicode Characters
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Story with Émojis 🚀 and Non-ASCII",
+  "content": "Testing UTF-8 support: 你好, Привет, مرحبا, שלום",
+  "author": "Unicode Tester 😊",
+  "tags": ["unicode", "international", "emoji"]
+}
+
+### Create Story with Maximum Length Title (100 chars exactly)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "This title is exactly one hundred characters long including spaces to test maximum boundary!!!!!",
+  "content": "Testing exact boundary condition for title length",
+  "author": "Boundary Tester",
+  "tags": ["boundary", "test"]
+}
+
+### ============================================
+### Error Cases
+### ============================================
+
+### Get Non-Existent Story (should return 404)
+GET {{baseUrl}}/api/stories/99999
+
+### Update Non-Existent Story (should return 404)
+PUT {{baseUrl}}/api/stories/99999
+Content-Type: {{contentType}}
+
+{
+  "title": "This Should Fail",
+  "content": "Trying to update non-existent story",
+  "author": "Ghost",
+  "tags": []
+}
+
+### Delete Non-Existent Story (should return 404)
+DELETE {{baseUrl}}/api/stories/99999
+
+### Invalid JSON (should return 400)
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Invalid JSON",
+  "content": "This has a trailing comma",
+  "author": "Error Tester",
+}
+
+### ============================================
+### Bulk Testing Scenarios
+### ============================================
+
+### Scenario 1: Create Multiple Stories
+# @name bulkStory1
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "The Photographer",
+  "content": "I developed the film from the abandoned camera. Every photo showed me sleeping, taken from inside my bedroom.",
+  "author": "Anonymous",
+  "tags": ["horror", "stalker", "thriller"]
+}
+
+###
+# @name bulkStory2
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "The Basement Tenant",
+  "content": "The landlord said the basement was for storage only. But every night, I hear footsteps coming up the stairs that don't exist.",
+  "author": "R. Morrison",
+  "tags": ["horror", "haunting", "basement"]
+}
+
+###
+# @name bulkStory3
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Mirror Protocol",
+  "content": "Smart mirrors learn your routine. Mine started showing my reflection doing things I hadn't done yet. Today it showed me screaming.",
+  "author": "K. Anderson",
+  "tags": ["tech-horror", "ai", "suspense"]
+}
+
+### Verify All Bulk Stories Created
+GET {{baseUrl}}/api/stories
+
+### ============================================
+### Complete CRUD Flow Test
+### ============================================
+
+### Step 1: Create a Story
+# @name crudTestStory
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "The Staircase",
+  "content": "Found a staircase in the woods near my house. It goes up twenty steps and ends in midair.",
+  "author": "J. Fletcher",
+  "tags": ["horror", "mystery", "woods"]
+}
+
+### Step 2: Read the Created Story
+@crudStoryId = {{crudTestStory.response.body.id}}
+GET {{baseUrl}}/api/stories/{{crudStoryId}}
+
+### Step 3: Update the Story
+PUT {{baseUrl}}/api/stories/{{crudStoryId}}
+Content-Type: {{contentType}}
+
+{
+  "title": "The Staircase - Day 7",
+  "content": "Found a staircase in the woods near my house. It goes up twenty steps and ends in midair. I've climbed it every day this week. Today, there were twenty-one steps.",
+  "author": "J. Fletcher",
+  "tags": ["horror", "mystery", "woods", "escalation"]
+}
+
+### Step 4: Verify Update
+GET {{baseUrl}}/api/stories/{{crudStoryId}}
+
+### Step 5: Delete the Story
+DELETE {{baseUrl}}/api/stories/{{crudStoryId}}
+
+### Step 6: Verify Deletion (should return 404)
+GET {{baseUrl}}/api/stories/{{crudStoryId}}
+
+### ============================================
+### Performance/Load Testing Helpers
+### ============================================
+
+### Create 10 Stories Quickly (run this section multiple times)
+# Story 1
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "The Smile",
+  "content": "My daughter won't stop smiling. It's been three days since she came back from the woods.",
+  "author": "P. Martinez",
+  "tags": ["horror", "possession", "children"]
+}
+
+### Story 2
+POST {{baseUrl}}/api/stories
+Content-Type: {{contentType}}
+
+{
+  "title": "Wrong Number",
+  "content": "Got a voicemail from my own number. It was me, begging myself not to answer the phone. Then my phone started ringing.",
+  "author": "T. Walsh",
+  "tags": ["horror", "time-loop", "phone"]
+}
+
+### Check Total Stories Count
+GET {{baseUrl}}/api/stories

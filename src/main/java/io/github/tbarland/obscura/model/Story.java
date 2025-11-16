@@ -1,5 +1,6 @@
 package io.github.tbarland.obscura.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,10 +16,18 @@ public class Story {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(nullable = false, length = 100)
   private String title;
+
+  @Column(nullable = false, columnDefinition = "TEXT")
   private String content;
+
+  @Column(nullable = false, length = 100)
   private String author;
+
   @ElementCollection private List<String> tags;
+
+  @Column(nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
   public Story() {}
