@@ -209,7 +209,7 @@ POST {{baseUrl}}/api/stories
 Content-Type: {{contentType}}
 
 {
-  "title": "Story with Émojis 🚀 and Ñoñ-ASCII",
+  "title": "Story with Émojis 🚀 and Non-ASCII",
   "content": "Testing UTF-8 support: 你好, Привет, مرحبا, שלום",
   "author": "Unicode Tester 😊",
   "tags": ["unicode", "international", "emoji"]

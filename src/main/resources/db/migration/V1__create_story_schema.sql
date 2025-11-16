@@ -6,8 +6,8 @@ CREATE TABLE story (
     created_at TIMESTAMP NOT NULL
 );
 
-ALTER TABLE story ADD CONSTRAINT check_title_length 
-    CHECK (LENGTH(title) > 0 AND LENGTH(title) <= 100);
+ALTER TABLE story ADD CONSTRAINT check_title_not_empty 
+    CHECK (LENGTH(title) > 0);
 
 ALTER TABLE story ADD CONSTRAINT check_content_not_empty 
     CHECK (LENGTH(content) > 0);
