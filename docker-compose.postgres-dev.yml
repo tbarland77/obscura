@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: obscura-postgres-dev
+    environment:
+      POSTGRES_DB: obscura
+      POSTGRES_USER: obscura
+      # For local development only - not for production use
+      POSTGRES_PASSWORD: local_test_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U obscura"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: eclipse-temurin:21-jdk
+    container_name: obscura-app-dev
+    working_dir: /workspace
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./:/workspace:cached
+      - gradle-cache:/root/.gradle
+    command: ["./gradlew", "bootRun", "--no-daemon"]
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=obscura
+      - DB_USERNAME=obscura
+      - DB_PASSWORD=local_test_password
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+    ports:
+      - "8080:8080"
+    restart: "no"
+
+volumes:
+  postgres-dev-data:
+    driver: local
+  gradle-cache:
+    driver: local
