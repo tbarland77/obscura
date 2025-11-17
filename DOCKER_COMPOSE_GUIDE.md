@@ -77,7 +77,7 @@ docker exec -it obscura-postgres-dev psql -U obscura -d obscura
 # Port: 5432
 # Database: obscura
 # Username: obscura
-# Password: obscura_dev_password
+# Password: local_test_password
 ```
 
 ## Workflow Recommendations

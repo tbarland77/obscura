@@ -25,6 +25,10 @@ java {
 	}
 }
 
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs << '-parameters'
+}
+
 repositories {
 	mavenCentral()
 }

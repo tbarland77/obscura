@@ -353,7 +353,7 @@ docker ps
 
 **Alternative**: Skip Testcontainers tests if Docker is not available:
 ```bash
-.\gradlew.bat test --tests '*Tests' -x PostgresIntegrationTests
+.\gradlew.bat test -Dtest.excludeTags=integration
 ```
 
 The H2-based integration tests (`FlywayMigrationTests`) provide good coverage without requiring Docker.

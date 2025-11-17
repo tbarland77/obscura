@@ -5,7 +5,8 @@ services:
     environment:
       POSTGRES_DB: obscura
       POSTGRES_USER: obscura
-      POSTGRES_PASSWORD: obscura_dev_password
+      # WARNING: This password is for LOCAL TESTING ONLY - never use in production
+      POSTGRES_PASSWORD: local_test_password
     ports:
       - "5432:5432"
     volumes:
@@ -30,7 +31,7 @@ services:
       - DB_PORT=5432
       - DB_NAME=obscura
       - DB_USERNAME=obscura
-      - DB_PASSWORD=obscura_dev_password
+      - DB_PASSWORD=local_test_password
     restart: on-failure
 
 volumes:

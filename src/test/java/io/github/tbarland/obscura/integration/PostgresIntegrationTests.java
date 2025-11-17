@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,12 @@ class PostgresIntegrationTests {
   @Autowired private JdbcTemplate jdbcTemplate;
 
   @Autowired private StoryRepository storyRepository;
+
+  @AfterEach
+  void cleanupDatabase() {
+    // Clean up all test data after each test to ensure isolation
+    storyRepository.deleteAll();
+  }
 
   @Test
   void testPostgresContainerIsRunning() {
@@ -185,9 +192,6 @@ class PostgresIntegrationTests {
     Story savedStory = storyRepository.findById(response.getBody().id()).orElse(null);
     assertNotNull(savedStory, "Story should be persisted in PostgreSQL");
     assertEquals("The Postgres Horror", savedStory.getTitle());
-
-    // Cleanup
-    storyRepository.deleteById(response.getBody().id());
   }
 
   @Test
@@ -218,9 +222,6 @@ class PostgresIntegrationTests {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
     assertTrue(response.getBody().length >= 2, "Should have at least 2 stories");
-
-    // Cleanup
-    storyRepository.deleteAll();
   }
 
   @Test
@@ -256,9 +257,6 @@ class PostgresIntegrationTests {
     Story updatedStory = storyRepository.findById(savedStory.getId()).orElse(null);
     assertNotNull(updatedStory);
     assertEquals("Updated Title", updatedStory.getTitle());
-
-    // Cleanup
-    storyRepository.deleteById(savedStory.getId());
   }
 
   @Test
@@ -335,9 +333,6 @@ class PostgresIntegrationTests {
     assertNotNull(saved1.getId(), "ID should be auto-generated");
     assertNotNull(saved2.getId(), "ID should be auto-generated");
     assertTrue(saved2.getId() > saved1.getId(), "IDs should be sequential");
-
-    // Cleanup
-    storyRepository.deleteAll();
   }
 
   @Test
@@ -357,9 +352,6 @@ class PostgresIntegrationTests {
     Story retrievedStory = storyRepository.findById(savedStory.getId()).orElse(null);
     assertNotNull(retrievedStory);
     assertEquals(10000, retrievedStory.getContent().length(), "Large content should be stored");
-
-    // Cleanup
-    storyRepository.deleteById(savedStory.getId());
   }
 
   @Test

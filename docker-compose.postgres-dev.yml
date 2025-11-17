@@ -5,7 +5,8 @@ services:
     environment:
       POSTGRES_DB: obscura
       POSTGRES_USER: obscura
-      POSTGRES_PASSWORD: obscura_dev_password
+      # For local development only - not for production use
+      POSTGRES_PASSWORD: local_test_password
     ports:
       - "5432:5432"
     volumes:
@@ -26,14 +27,14 @@ services:
     volumes:
       - ./:/workspace:cached
       - gradle-cache:/root/.gradle
-    command: ["./gradlew", "bootRun", "--no-daemon", "--args=--spring.profiles.active=prod"]
+    command: ["./gradlew", "bootRun", "--no-daemon"]
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=obscura
       - DB_USERNAME=obscura
-      - DB_PASSWORD=obscura_dev_password
+      - DB_PASSWORD=local_test_password
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
     ports:
       - "8080:8080"
