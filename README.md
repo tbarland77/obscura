@@ -10,13 +10,15 @@ A lightweight Spring Boot REST API for managing stories. This project demonstrat
 
 ## Features
 
-- **Full CRUD API** for story management
+- **Full CRUD API** for story management with horror/suspense themed content
 - **Input validation** with Jakarta Bean Validation
-- **In-memory H2 database** for quick setup and testing
+- **Database migrations** with Flyway for version-controlled schema management
+- **Multi-database support** - H2 (local/test) and PostgreSQL (production)
+- **Production-parity testing** with Testcontainers and PostgreSQL
 - **Spring Boot Actuator** for health checks and metrics
 - **Code quality enforcement** with JaCoCo (85% coverage) and Spotless
 - **Docker support** with multi-stage builds
-- **Comprehensive test suite** with JUnit 5 and Mockito
+- **Comprehensive test suite** with JUnit 5, Mockito, and integration tests
 - **Optimized CI/CD pipeline** with parallel jobs, build caching, and automated security alerts
 
 ## Prerequisites
@@ -24,7 +26,7 @@ A lightweight Spring Boot REST API for managing stories. This project demonstrat
 ### Prerequisites
 
 - **Java 21** (or let Gradle toolchain download it automatically)
-- **Docker & Docker Compose** (optional, for containerized development)
+- **Docker & Docker Compose** (optional, for containerized development and Testcontainers tests)
 
 ### Running Locally
 
@@ -40,15 +42,27 @@ A lightweight Spring Boot REST API for managing stories. This project demonstrat
 
 The application starts on `http://localhost:8080`
 
-#### Option 2: Docker Compose (Development Mode)
+#### Option 2: Docker Compose (Development Mode with H2)
 
 ```bash
 docker-compose up
 ```
 
-This uses the override configuration for fast local development with live code reloading.
+This uses the override configuration for fast local development with live code reloading and H2 in-memory database.
 
-#### Option 3: Docker (Production-like Build)
+#### Option 3: Docker Compose with PostgreSQL (Production-like)
+
+```bash
+# Production-like build with PostgreSQL
+docker-compose -f docker-compose.postgres.yml up
+
+# Development mode with PostgreSQL and hot reload
+docker-compose -f docker-compose.postgres-dev.yml up
+```
+
+This spins up both PostgreSQL 17 and the application, mimicking production environment locally.
+
+#### Option 4: Docker (Production-like Build)
 
 ```bash
 # Build the image
@@ -110,10 +124,43 @@ Content-Type: application/json
 ### Run Tests
 
 ```bash
+# Run all tests (requires Docker for PostgreSQL integration tests)
 .\gradlew.bat test
+
+# Run tests excluding integration tests (no Docker required - fast)
+.\gradlew.bat test -Dtest.excludeTags=integration
+
+# Run only unit tests (fast feedback)
+.\gradlew.bat test --tests StoryServiceTests --tests StoryControllerTests
+
+# Run Flyway migration tests (H2-based, no Docker required)
+.\gradlew.bat test --tests FlywayMigrationTests
+
+# Run only integration tests (requires Docker)
+.\gradlew.bat test -Dtest.includeTags=integration
 ```
 
 Test reports are generated in `build/reports/tests/test/`
+
+### Test Suite Overview
+
+The project includes three layers of testing:
+
+1. **Unit Tests** (`StoryServiceTests`, `StoryControllerTests`)
+   - Fast, isolated tests using mocks
+   - No database required
+   - Test business logic and controller behavior
+
+2. **Flyway Integration Tests** (`FlywayMigrationTests`)
+   - Tests Flyway migrations against H2
+   - Verifies schema creation and JPA compatibility
+   - No Docker required
+
+3. **Production-Parity Integration Tests** (`PostgresIntegrationTests`)
+   - Uses Testcontainers to spin up real PostgreSQL container
+   - Tests full REST API against PostgreSQL
+   - Verifies production-specific behavior (BIGSERIAL, TEXT columns, etc.)
+   - **Requires Docker to be running**
 
 ### Full Build with Coverage
 
@@ -123,6 +170,8 @@ Test reports are generated in `build/reports/tests/test/`
 
 This runs:
 - All unit tests
+- Flyway migration tests
+- PostgreSQL integration tests (if Docker available)
 - JaCoCo coverage verification (minimum 85% line coverage)
 - Code formatting checks with Spotless
 
@@ -166,14 +215,23 @@ src/main/java/io/github/tbarland/obscura/
     └── StoryResponseDto.java        # Response DTO
 
 src/main/resources/
-└── application.yml                  # Spring Boot configuration
+├── application.yml                  # Base Spring Boot configuration
+├── application-local.yml            # Local profile (H2 with console)
+├── application-test.yml             # Test profile (H2 optimized)
+├── application-prod.yml             # Production profile (PostgreSQL)
+└── db/migration/
+    └── V1__create_story_schema.sql  # Flyway migration script
 
 src/test/java/io/github/tbarland/obscura/
 ├── controller/
-│   └── StoryControllerTests.java
+│   └── StoryControllerTests.java    # Controller unit tests
 ├── service/
-│   └── StoryServiceTests.java
-└── ObscuraApplicationTests.java
+│   └── StoryServiceTests.java       # Service unit tests
+├── migration/
+│   └── FlywayMigrationTests.java    # Flyway integration tests (H2)
+├── integration/
+│   └── PostgresIntegrationTests.java # PostgreSQL integration tests (Testcontainers)
+└── ObscuraApplicationTests.java     # Application context smoke test
 ```
 
 ## Actuator Endpoints
@@ -186,17 +244,46 @@ Spring Boot Actuator exposes monitoring and management endpoints:
 
 ## Docker Configuration
 
-### Development Setup
+### Docker Compose Files
 
-The project includes two Docker Compose files:
+The project includes multiple Docker Compose configurations:
 
-- **docker-compose.yml**: Base configuration that builds a production-like image
-- **docker-compose.override.yml**: Development overrides with:
+#### H2 Development (Default)
+- **docker-compose.yml**: Base configuration with H2 database
+- **docker-compose.override.yml**: Development overrides with live code mounting and hot reload
+
+When you run `docker-compose up`, both files are automatically merged for fast local development.
+
+#### PostgreSQL (Production-like)
+- **docker-compose.postgres.yml**: Production-like setup with PostgreSQL 17
+  - Uses production profile with real PostgreSQL database
+  - Builds application Docker image
+  - Includes health checks and proper dependency ordering
+  - Data persisted in Docker volume
+
+- **docker-compose.postgres-dev.yml**: Development setup with PostgreSQL
   - Live code mounting for hot reload
+  - Uses PostgreSQL 17 (matches production)
   - Gradle cache persistence
   - Spring DevTools enabled
+  - Best for testing Flyway migrations locally
 
-When you run `docker-compose up`, both files are automatically merged for the best local development experience.
+**Quick Usage:**
+```bash
+# H2 development (fast iteration)
+docker-compose up
+
+# PostgreSQL production-like
+docker-compose -f docker-compose.postgres.yml up
+
+# PostgreSQL development (hot reload)
+docker-compose -f docker-compose.postgres-dev.yml up
+
+# Stop and remove volumes (clean database)
+docker-compose -f docker-compose.postgres.yml down -v
+```
+
+📖 **See [DOCKER_COMPOSE_GUIDE.md](DOCKER_COMPOSE_GUIDE.md) for detailed usage, troubleshooting, and workflow recommendations.**
 
 ### Production Dockerfile
 
@@ -212,7 +299,11 @@ The Dockerfile uses a multi-stage build:
 - **Java Toolchain**: The project enforces Java 21 via Gradle toolchain. Gradle will attempt to download it if not available.
 - **Code Style**: Uses Google Java Format enforced by Spotless. Run `./gradlew spotlessApply` before committing.
 - **Test Coverage**: Build fails if line coverage drops below 85%. Adjust in `build.gradle` if needed.
-- **Database**: H2 runs in-memory by default. Data is lost on restart. Enable H2 console in `application.yml` if needed for debugging.
+- **Database Migrations**: Schema is managed by Flyway. Migration scripts are in `src/main/resources/db/migration/`. Hibernate uses `ddl-auto: validate` to ensure entities match schema.
+- **Database Profiles**:
+  - Default/Local/Test: H2 in-memory (data resets on restart)
+  - Production: PostgreSQL (requires `DB_PASSWORD` environment variable)
+- **Testcontainers**: PostgreSQL integration tests require Docker. They're automatically skipped if Docker is not running.
 
 ## Troubleshooting
 
@@ -247,6 +338,25 @@ spring:
 ```
 
 Then access at `http://localhost:8080/h2-console`
+
+### Testcontainers Tests Failing
+
+**Problem**: PostgreSQL integration tests fail with `DockerClientProviderStrategy` error
+
+**Solution**: Ensure Docker is installed and running:
+```bash
+# Check if Docker is running
+docker ps
+
+# If not running, start Docker Desktop (Windows/macOS) or Docker daemon (Linux)
+```
+
+**Alternative**: Skip Testcontainers tests if Docker is not available:
+```bash
+.\gradlew.bat test --tests '*Tests' -x PostgresIntegrationTests
+```
+
+The H2-based integration tests (`FlywayMigrationTests`) provide good coverage without requiring Docker.
 
 ## Contributing
 

@@ -56,8 +56,8 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build check
+      - name: Build with Gradle (excluding integration tests)
+        run: ./gradlew build check -Dtest.excludeTags=integration
 
       - name: Upload test results
         if: always()
@@ -85,6 +85,42 @@ jobs:
            else
           echo "⚠️ Coverage report not found" >> $GITHUB_STEP_SUMMARY
           fi
+
+  # PostgreSQL integration tests (only on PRs and main branch)
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: build  # Run after main build passes
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Run PostgreSQL integration tests
+        run: ./gradlew test -Dtest.includeTags=integration
+
+      - name: Upload PostgreSQL test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-integration-test-results
+          path: build/reports/tests/test/
+          retention-days: 30
 
   # Dependency submission (runs after formatting check, in parallel with build)
   dependency-submission:
