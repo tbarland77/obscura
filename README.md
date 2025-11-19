@@ -11,6 +11,7 @@ A lightweight Spring Boot REST API for managing stories. This project demonstrat
 ## Features
 
 - **Full CRUD API** for story management with horror/suspense themed content
+- **CORS enabled** for frontend development (Vite, React, and alternative localhost)
 - **Input validation** with Jakarta Bean Validation
 - **Database migrations** with Flyway for version-controlled schema management
 - **Multi-database support** - H2 (local/test) and PostgreSQL (production)
@@ -79,11 +80,69 @@ Base URL: `http://localhost:8080/api/stories`
 | Method | Endpoint | Description | Status |
 |--------|----------|-------------|--------|
 | GET | `/api/stories` | Retrieve all stories | 200 |
+| GET | `/api/stories/{id}` | Retrieve a single story by ID | 200 |
 | POST | `/api/stories` | Create a new story | 200 |
 | PUT | `/api/stories/{id}` | Update an existing story | 200 |
 | DELETE | `/api/stories/{id}` | Delete a story | 204 |
 
 ### Request/Response Examples
+
+#### Get All Stories
+
+```bash
+GET /api/stories
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "title": "My First Story",
+    "content": "This is the content of my story.",
+    "author": "John Doe",
+    "tags": ["fiction", "adventure"],
+    "createdAt": "2025-11-11T10:30:00"
+  },
+  {
+    "id": 2,
+    "title": "Another Story",
+    "content": "More content here.",
+    "author": "Jane Smith",
+    "tags": ["mystery"],
+    "createdAt": "2025-11-11T11:15:00"
+  }
+]
+```
+
+#### Get Story by ID
+
+```bash
+GET /api/stories/1
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "title": "My First Story",
+  "content": "This is the content of my story.",
+  "author": "John Doe",
+  "tags": ["fiction", "adventure"],
+  "createdAt": "2025-11-11T10:30:00"
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "timestamp": "2025-11-11T10:30:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Story not found with id: 999",
+  "path": "/api/stories/999"
+}
+```
 
 #### Create a Story
 
@@ -99,8 +158,7 @@ Content-Type: application/json
 }
 ```
 
-#### Response
-
+**Response:**
 ```json
 {
   "id": 1,
@@ -118,6 +176,23 @@ Content-Type: application/json
 - `content`: Required
 - `author`: Required
 - `tags`: Optional list of strings
+
+### CORS Configuration
+
+The API is configured to allow Cross-Origin Resource Sharing (CORS) for frontend development:
+
+**Allowed Origins:**
+- `http://localhost:5173` - Vite default dev server
+- `http://localhost:3000` - React (Create React App) dev server
+- `http://127.0.0.1:5173` - Alternative localhost address
+
+**Allowed Methods:** GET, POST, PUT, DELETE, OPTIONS
+
+**Credentials:** Enabled (for future authentication support)
+
+**Preflight Cache:** 1 hour (3600 seconds)
+
+This configuration is defined in `WebConfig.java` and is suitable for local development. For production, you should configure environment-specific origins via application properties.
 
 ## Building and Testing
 
@@ -202,6 +277,8 @@ These optimizations significantly reduce build times, especially for incremental
 ```
 src/main/java/io/github/tbarland/obscura/
 ├── ObscuraApplication.java          # Main application entry point
+├── config/
+│   └── WebConfig.java               # CORS configuration
 ├── controller/
 │   └── StoryController.java         # REST API endpoints
 ├── service/
@@ -223,6 +300,8 @@ src/main/resources/
     └── V1__create_story_schema.sql  # Flyway migration script
 
 src/test/java/io/github/tbarland/obscura/
+├── config/
+│   └── WebConfigTests.java          # CORS configuration tests
 ├── controller/
 │   └── StoryControllerTests.java    # Controller unit tests
 ├── service/
