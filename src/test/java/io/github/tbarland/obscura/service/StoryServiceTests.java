@@ -43,6 +43,38 @@ class StoryServiceTests {
   }
 
   @Test
+  void testGetStoryById() {
+    Long storyId = 1L;
+    Story mockStory =
+        new Story(
+            storyId,
+            "Test Title",
+            "Test Content",
+            "Test Author",
+            List.of("tag1", "tag2"),
+            LocalDateTime.now());
+
+    when(storyRepository.findById(storyId)).thenReturn(Optional.of(mockStory));
+
+    var response = storyService.getStoryById(storyId);
+
+    assertEquals(storyId, response.id());
+    assertEquals("Test Title", response.title());
+    assertEquals("Test Content", response.content());
+    assertEquals("Test Author", response.author());
+    assertEquals(List.of("tag1", "tag2"), response.tags());
+  }
+
+  @Test
+  void testGetStoryByIdNotFound() {
+    Long storyId = 999L;
+
+    when(storyRepository.findById(storyId)).thenReturn(Optional.empty());
+
+    assertThrows(ResponseStatusException.class, () -> storyService.getStoryById(storyId));
+  }
+
+  @Test
   void testCreateStory() {
 
     Story mockStory =

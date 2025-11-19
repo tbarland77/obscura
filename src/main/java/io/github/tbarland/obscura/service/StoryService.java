@@ -21,17 +21,19 @@ public class StoryService {
   }
 
   public List<StoryResponseDto> getAllStories() {
-    return storyRepository.findAll().stream()
-        .map(
-            story ->
-                new StoryResponseDto(
-                    story.getId(),
-                    story.getTitle(),
-                    story.getContent(),
-                    story.getAuthor(),
-                    story.getTags(),
-                    story.getCreatedAt()))
-        .toList();
+    return storyRepository.findAll().stream().map(this::toResponseDto).toList();
+  }
+
+  public StoryResponseDto getStoryById(Long id) {
+    Story story =
+        storyRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Story not found with id: " + id));
+
+    return toResponseDto(story);
   }
 
   @Transactional
@@ -45,13 +47,7 @@ public class StoryService {
 
     Story saved = storyRepository.save(story);
 
-    return new StoryResponseDto(
-        saved.getId(),
-        saved.getTitle(),
-        saved.getContent(),
-        saved.getAuthor(),
-        saved.getTags(),
-        saved.getCreatedAt());
+    return toResponseDto(saved);
   }
 
   @Transactional
@@ -77,6 +73,10 @@ public class StoryService {
     story.setAuthor(dto.author());
     story.setTags(dto.tags());
 
+    return toResponseDto(story);
+  }
+
+  private StoryResponseDto toResponseDto(Story story) {
     return new StoryResponseDto(
         story.getId(),
         story.getTitle(),

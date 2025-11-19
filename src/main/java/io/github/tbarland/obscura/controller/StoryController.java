@@ -30,6 +30,11 @@ public class StoryController {
     return ResponseEntity.ok(storyService.getAllStories());
   }
 
+  @GetMapping("/{id}")
+  public ResponseEntity<StoryResponseDto> getStoryById(@PathVariable Long id) {
+    return ResponseEntity.ok(storyService.getStoryById(id));
+  }
+
   @PostMapping()
   public ResponseEntity<StoryResponseDto> createStory(@Valid @RequestBody StoryRequestDto request) {
     return ResponseEntity.ok(storyService.createStory(request));

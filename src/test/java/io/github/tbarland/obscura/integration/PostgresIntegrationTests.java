@@ -195,6 +195,44 @@ class PostgresIntegrationTests {
   }
 
   @Test
+  void testGetStoryByIdViaRestApiOnPostgres() {
+    // Arrange - create test story
+    Story story = new Story();
+    story.setTitle("Single Story Test");
+    story.setContent("Testing GET by ID endpoint");
+    story.setAuthor("Integration Tester");
+    story.setTags(Arrays.asList("test", "postgres"));
+    story.setCreatedAt(LocalDateTime.now());
+    Story savedStory = storyRepository.save(story);
+
+    // Act
+    ResponseEntity<StoryResponseDto> response =
+        restTemplate.getForEntity("/api/stories/" + savedStory.getId(), StoryResponseDto.class);
+
+    // Assert
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(savedStory.getId(), response.getBody().id());
+    assertEquals("Single Story Test", response.getBody().title());
+    assertEquals("Testing GET by ID endpoint", response.getBody().content());
+    assertEquals("Integration Tester", response.getBody().author());
+    assertEquals(2, response.getBody().tags().size());
+  }
+
+  @Test
+  void testGetStoryByIdNotFoundViaRestApiOnPostgres() {
+    // Arrange - use non-existent ID
+    Long nonExistentId = 999999L;
+
+    // Act
+    ResponseEntity<String> response =
+        restTemplate.getForEntity("/api/stories/" + nonExistentId, String.class);
+
+    // Assert
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+  }
+
+  @Test
   void testGetAllStoriesViaRestApiOnPostgres() {
     // Arrange - create test data
     Story story1 = new Story();
