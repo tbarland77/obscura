@@ -45,7 +45,7 @@ class StoryControllerTests {
 
   @Test
   void testGetStoryById() {
-    Long storyId = 1L;
+    long storyId = 1L;
     StoryResponseDto mockStory =
         new StoryResponseDto(
             storyId,
@@ -66,7 +66,7 @@ class StoryControllerTests {
 
   @Test
   void testGetStoryByIdNotFound() {
-    Long storyId = 999L;
+    long storyId = 999L;
 
     when(storyService.getStoryById(storyId))
         .thenThrow(
