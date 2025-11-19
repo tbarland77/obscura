@@ -34,6 +34,24 @@ public class StoryService {
         .toList();
   }
 
+  public StoryResponseDto getStoryById(Long id) {
+    Story story =
+        storyRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Story not found with id: " + id));
+
+    return new StoryResponseDto(
+        story.getId(),
+        story.getTitle(),
+        story.getContent(),
+        story.getAuthor(),
+        story.getTags(),
+        story.getCreatedAt());
+  }
+
   @Transactional
   public StoryResponseDto createStory(StoryRequestDto dto) {
     Story story = new Story();

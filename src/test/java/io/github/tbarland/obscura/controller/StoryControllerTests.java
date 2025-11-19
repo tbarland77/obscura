@@ -44,6 +44,39 @@ class StoryControllerTests {
   }
 
   @Test
+  void testGetStoryById() {
+    Long storyId = 1L;
+    StoryResponseDto mockStory =
+        new StoryResponseDto(
+            storyId,
+            "Test Title",
+            "Test Content",
+            "Test Author",
+            List.of("tag1", "tag2"),
+            LocalDateTime.now());
+
+    when(storyService.getStoryById(storyId)).thenReturn(mockStory);
+
+    var response = storyController.getStoryById(storyId);
+
+    assertEquals(200, response.getStatusCode().value());
+    assertEquals(mockStory, response.getBody());
+    assertEquals("Test Title", response.getBody().title());
+  }
+
+  @Test
+  void testGetStoryByIdNotFound() {
+    Long storyId = 999L;
+
+    when(storyService.getStoryById(storyId))
+        .thenThrow(
+            new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Story not found with id: " + storyId));
+
+    assertThrows(ResponseStatusException.class, () -> storyController.getStoryById(storyId));
+  }
+
+  @Test
   void testCreateStory() {
 
     StoryRequestDto mockRequest =
