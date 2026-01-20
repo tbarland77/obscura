@@ -15,6 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
@@ -40,6 +45,29 @@ class StoryServiceTests {
     assertEquals(2, response.size());
     assertEquals("Title1", response.get(0).title());
     assertEquals("Title2", response.get(1).title());
+  }
+
+  @Test
+  void testGetAllStoriesPaginated() {
+    List<Story> mockStories =
+        List.of(
+            new Story(
+                1L, "Title1", "Content1", "Author1", List.of("tag1", "tag2"), LocalDateTime.now()),
+            new Story(2L, "Title2", "Content2", "Author2", List.of("tag3"), LocalDateTime.now()));
+
+    Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+    Page<Story> mockPage = new PageImpl<>(mockStories, pageable, 2);
+
+    when(storyRepository.findAll(pageable)).thenReturn(mockPage);
+
+    Page<io.github.tbarland.obscura.dto.StoryResponseDto> response =
+        storyService.getAllStories(pageable);
+
+    assertEquals(2, response.getTotalElements());
+    assertEquals(1, response.getTotalPages());
+    assertEquals(2, response.getContent().size());
+    assertEquals("Title1", response.getContent().get(0).title());
+    assertEquals("Title2", response.getContent().get(1).title());
   }
 
   @Test
