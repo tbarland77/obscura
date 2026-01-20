@@ -2,6 +2,7 @@ package io.github.tbarland.obscura.integration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.tbarland.obscura.dto.StoryRequestDto;
 import io.github.tbarland.obscura.dto.StoryResponseDto;
 import io.github.tbarland.obscura.model.Story;
@@ -252,14 +253,22 @@ class PostgresIntegrationTests {
     storyRepository.save(story1);
     storyRepository.save(story2);
 
-    // Act
-    ResponseEntity<StoryResponseDto[]> response =
-        restTemplate.getForEntity("/api/stories", StoryResponseDto[].class);
+    // Act - endpoint now returns paginated response
+    ResponseEntity<JsonNode> response = restTemplate.getForEntity("/api/stories", JsonNode.class);
 
     // Assert
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertTrue(response.getBody().length >= 2, "Should have at least 2 stories");
+
+    JsonNode content = response.getBody().get("content");
+    assertNotNull(content, "Page should have content array");
+    assertTrue(content.isArray(), "Content should be an array");
+    assertTrue(content.size() >= 2, "Should have at least 2 stories");
+
+    // Verify pagination metadata exists
+    assertTrue(response.getBody().has("totalElements"), "Should have totalElements");
+    assertTrue(response.getBody().has("totalPages"), "Should have totalPages");
+    assertTrue(response.getBody().has("pageable"), "Should have pageable info");
   }
 
   @Test
