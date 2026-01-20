@@ -16,6 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,12 +40,16 @@ class StoryControllerTests {
             new StoryResponseDto(
                 2L, "Title2", "Content2", "Author2", List.of("tag3"), LocalDateTime.now()));
 
-    when(storyService.getAllStories()).thenReturn(mockStories);
+    Pageable pageable = PageRequest.of(0, 20, Sort.by("createdAt"));
+    Page<StoryResponseDto> mockPage = new PageImpl<>(mockStories, pageable, 2);
 
-    var response = storyController.getAllStories();
+    when(storyService.getAllStories(pageable)).thenReturn(mockPage);
+
+    var response = storyController.getAllStories(pageable);
 
     assertEquals(200, response.getStatusCode().value());
-    assertEquals(mockStories, response.getBody());
+    assertEquals(2, response.getBody().getTotalElements());
+    assertEquals(mockStories, response.getBody().getContent());
   }
 
   @Test

@@ -4,7 +4,9 @@ import io.github.tbarland.obscura.dto.StoryRequestDto;
 import io.github.tbarland.obscura.dto.StoryResponseDto;
 import io.github.tbarland.obscura.service.StoryService;
 import jakarta.validation.Valid;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +28,9 @@ public class StoryController {
   }
 
   @GetMapping
-  public ResponseEntity<List<StoryResponseDto>> getAllStories() {
-    return ResponseEntity.ok(storyService.getAllStories());
+  public ResponseEntity<Page<StoryResponseDto>> getAllStories(
+      @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+    return ResponseEntity.ok(storyService.getAllStories(pageable));
   }
 
   @GetMapping("/{id}")
