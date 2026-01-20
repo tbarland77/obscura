@@ -40,7 +40,7 @@ class StoryControllerTests {
             new StoryResponseDto(
                 2L, "Title2", "Content2", "Author2", List.of("tag3"), LocalDateTime.now()));
 
-    Pageable pageable = PageRequest.of(0, 20, Sort.by("createdAt"));
+    Pageable pageable = PageRequest.of(0, 20, Sort.by("createdAt").descending());
     Page<StoryResponseDto> mockPage = new PageImpl<>(mockStories, pageable, 2);
 
     when(storyService.getAllStories(pageable)).thenReturn(mockPage);
